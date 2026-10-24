@@ -426,7 +426,7 @@ function renderPanel(){const p=$('#panel');
   $$('#panel .issue[data-s]').forEach(d=>d.onclick=()=>{sel=d.dataset.s;selSchool=null;render();});}
 function renderKpis(){const n=Object.keys(PL).filter(k=>ST(k)).length;$('#kPl').textContent=`${n}/${STUDENTS.length}`;$('#kKn').textContent=issues().filter(i=>i.lvl===2).length;
   const free=SCHOOLS.reduce((a,sc)=>a+Math.max(0,(sc.ob||0)-used(sc.id,'ob'))+Math.max(0,(sc.bb||0)-used(sc.id,'bb')),0);$('#kVr').textContent=free;}
-function render(){renderStudents();drawSchools();renderPanel();renderKpis();}
+function render(){renderStudents();drawSchools();renderPanel();renderKpis();$('#hint').style.opacity=(sel||selSchool)?0:1;}
 
 /* ================= CSV ================= */
 function csvParse(t){const lines=t.replace(/\r/g,'').split('\n').filter(l=>l.trim());const sep=lines[0].includes(';')?';':',';const head=lines[0].split(sep).map(h=>h.trim().toLowerCase());return lines.slice(1).map(l=>{const c=l.split(sep);const o={};head.forEach((h,i)=>o[h]=(c[i]||'').trim());return o;});}
