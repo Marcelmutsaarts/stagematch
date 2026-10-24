@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stagematch · Hogeschool de Kempel</title>
+<meta name="description" content="Stagematch-bord voor het stagebureau: plaats studenten bij stagescholen en zie direct waar het knelt. Demo met fictieve gegevens.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#231973;--red:#F02837;--wine:#A50A28;--lav:#C7C6E0;--lav2:#F0F0FA;--ink:#2E2E2E;--muted:#6b6880;--line:#e3e2f0;
+  --ok:#1f9d63;--ok2:#e3f5ec;--mid:#e9900c;--mid2:#fdf1dc;--bad:#F02837;--bad2:#fde4e6;--r:18px}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--lav2);color:var(--ink);font-family:Quicksand,system-ui,sans-serif;font-weight:500;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.app{display:grid;grid-template-rows:auto 1fr;height:100vh}
+
+/* header */
+header{position:relative;background:#fff;display:flex;align-items:center;gap:22px;padding:12px 24px;border-bottom:1px solid var(--line);overflow:hidden}
+header::after{content:"";position:absolute;right:-60px;top:-40px;width:220px;height:160px;background:var(--navy);transform:rotate(45deg);border-radius:28px;z-index:0}
+.logo{height:42px;display:flex;align-items:center;gap:10px;position:relative;z-index:1}
+.logo img{height:42px;display:block}
+.logo .fb{display:none;align-items:center;gap:9px;font-weight:700;color:var(--navy);line-height:1}
+.logo .fb small{display:block;font-size:8.5px;letter-spacing:.06em;color:var(--red);margin-top:3px}
+.sep{width:1px;height:38px;background:var(--line)}
+.ttl h1{margin:0;font-size:24px;font-weight:700;color:var(--navy);letter-spacing:-.01em}
+.ttl p{margin:1px 0 0;font-size:13px;color:var(--muted)}
+.kpis{display:flex;gap:10px;margin-left:auto;position:relative;z-index:1}
+.kpi{background:var(--lav2);border-radius:14px;padding:7px 14px;min-width:96px}
+.kpi small{display:block;font-size:11.5px;color:var(--muted);font-weight:600}
+.kpi b{font-size:21px;color:var(--navy);font-weight:700}
+.kpi.bad b{color:var(--red)}
+.hbtns{display:flex;gap:8px;position:relative;z-index:1;margin-right:130px}
+.btn{border:2px solid var(--navy);background:#fff;color:var(--navy);border-radius:12px;padding:8px 14px;font-weight:700;font-size:13.5px;white-space:nowrap;transition:all .15s}
+.btn:hover{background:var(--navy);color:#fff}
+.btn.red{background:var(--red);border-color:var(--red);color:#fff;border-bottom-right-radius:3px}
+.btn.red:hover{background:var(--wine);border-color:var(--wine)}
+.btn.sm{padding:5px 10px;font-size:12.5px;border-width:1.5px}
+
+/* main grid */
+main{display:grid;grid-template-columns:340px 1fr 380px;gap:16px;padding:16px;min-height:0}
+.col{background:#fff;border-radius:var(--r);display:flex;flex-direction:column;min-height:0;box-shadow:0 2px 0 rgba(35,25,115,.04)}
+.colh{padding:16px 18px 10px;border-bottom:1px solid var(--line)}
+.colh h2{margin:0;font-size:17px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px}
+.colh h2 .n{background:var(--red);color:#fff;border-radius:8px;border-bottom-right-radius:2px;font-size:12.5px;padding:2px 8px}
+.scroll{overflow:auto;flex:1;padding:12px 14px 16px;scrollbar-width:thin}
+
+/* studenten */
+.tabs{display:flex;background:var(--lav2);border-radius:12px;padding:3px;margin:10px 0 8px}
+.tabs button{flex:1;border:0;background:none;border-radius:9px;padding:7px 6px;font-weight:700;font-size:13px;color:var(--muted)}
+.tabs button.on{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(35,25,115,.12)}
+.filters{display:flex;gap:6px;align-items:center}
+.filters input{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:10px;padding:6px 10px;font-size:13px;background:#fff}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:700;color:var(--muted)}
+.chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.sc{display:grid;grid-template-columns:38px 1fr auto;gap:10px;align-items:center;padding:10px;border:1.5px solid var(--line);border-radius:14px;margin-bottom:8px;background:#fff;cursor:grab;transition:border-color .15s,box-shadow .15s}
+.sc:hover{border-color:var(--lav)}
+.sc.sel{border-color:var(--navy);box-shadow:0 0 0 3px rgba(35,25,115,.1)}
+.sc.dragging{opacity:.45}
+.av{width:38px;height:38px;border-radius:12px;border-bottom-right-radius:3px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:13.5px}
+.sc b{display:block;font-size:14px;color:var(--navy);font-weight:700;line-height:1.2}
+.sc .meta{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.35}
+.fit{font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 8px;white-space:nowrap}
+.fit.g{background:var(--ok2);color:var(--ok)}.fit.o{background:var(--mid2);color:#a35f00}.fit.r{background:var(--bad2);color:var(--red)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:99px;vertical-align:0}
+.dot.g{background:var(--ok)}.dot.o{background:var(--mid)}.dot.r{background:var(--red)}
+.empty{color:var(--muted);font-size:13.5px;text-align:center;padding:24px 10px}
+
+/* kaart */
+.mapwrap{position:relative;flex:1;min-height:0;border-radius:var(--r);overflow:hidden;background:#fff}
+#map{width:100%;height:100%;display:block}
+.maph{position:absolute;left:16px;top:14px;right:16px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
+.maph>*{pointer-events:auto}
+.maph h2{margin:0;font-size:17px;color:var(--navy);font-weight:700;background:rgba(255,255,255,.9);border-radius:12px;padding:6px 12px}
+.legend{background:rgba(255,255,255,.94);border-radius:12px;padding:8px 12px;font-size:12px;color:var(--muted);display:grid;gap:4px}
+.legend span{display:flex;align-items:center;gap:7px}
+.hint{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:var(--navy);color:#fff;border-radius:14px;border-bottom-right-radius:4px;padding:9px 16px;font-size:13.5px;font-weight:600;box-shadow:0 8px 24px rgba(35,25,115,.25);white-space:nowrap;transition:opacity .2s}
+.school{cursor:pointer}
+.school text{font-family:Quicksand,sans-serif;font-weight:700;pointer-events:none}
+.town{font-family:Quicksand,sans-serif;font-weight:700;fill:#8d8aa8;font-size:9px;letter-spacing:.04em;text-transform:uppercase;pointer-events:none}
+#tip{position:fixed;z-index:30;pointer-events:none;background:var(--navy);color:#fff;border-radius:10px;padding:6px 10px;font-size:12.5px;font-weight:600;display:none;max-width:260px;line-height:1.35}
+
+/* paneel */
+.ph{padding:16px 18px 12px;border-bottom:1px solid var(--line);position:relative}
+.ph h2{margin:0;font-size:19px;color:var(--navy);font-weight:700;line-height:1.2;padding-right:30px}
+.ph p{margin:4px 0 0;font-size:13px;color:var(--muted)}
+.ph .x{position:absolute;right:12px;top:12px;border:0;background:var(--lav2);width:28px;height:28px;border-radius:9px;font-size:16px;color:var(--navy);font-weight:700}
+.sec{margin:4px 0 14px}
+.sec h3{margin:0 0 7px;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.issue{display:grid;grid-template-columns:12px 1fr;gap:10px;padding:11px 12px;border-radius:14px;background:var(--lav2);margin-bottom:7px;cursor:pointer;border:1.5px solid transparent}
+.issue:hover{border-color:var(--lav)}
+.issue .dot{margin-top:5px}
+.issue b{display:block;font-size:13.5px;color:var(--navy);font-weight:700;line-height:1.3}
+.issue span{display:block;font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+.slot{border:2px dashed var(--lav);border-radius:14px;padding:9px;min-height:54px;margin-bottom:10px;transition:all .15s}
+.slot.over{border-color:var(--navy);background:var(--lav2)}
+.slot .sh{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.slot .sh em{font-style:normal;color:var(--muted)}
+.slot .sh em.bad{color:var(--red)}
+.pchip{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--line);border-radius:11px;padding:6px 8px;margin-top:5px;font-size:13px}
+.pchip b{color:var(--navy);font-weight:700;flex:1;cursor:pointer}
+.pchip small{color:var(--muted);font-size:11.5px}
+.pchip button{border:0;background:var(--lav2);border-radius:8px;width:24px;height:24px;font-size:12px;color:var(--navy);font-weight:700}
+.why{font-size:12px;line-height:1.4;margin:2px 0 0 0;color:var(--muted)}
+.why li{margin:1px 0}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:13px;background:var(--lav2);border-radius:14px;padding:11px 13px}
+.facts dt{color:var(--muted);font-weight:600}.facts dd{margin:0;color:var(--navy);font-weight:700}
+.hist{display:flex;gap:6px;flex-wrap:wrap}
+.hist span{font-size:12px;border-radius:9px;padding:4px 8px;background:var(--lav2);color:var(--navy);font-weight:700}
+.opt{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:start;padding:10px 11px;border:1.5px solid var(--line);border-radius:14px;margin-bottom:7px}
+.opt .dot{margin-top:5px}
+.opt b{font-size:13.5px;color:var(--navy);font-weight:700;display:block}
+.opt span{font-size:12px;color:var(--muted);line-height:1.4;display:block}
+.opt.cur{border-color:var(--navy);background:var(--lav2)}
+.good{background:var(--ok2);color:var(--ok);border-radius:14px;padding:14px;font-weight:700;font-size:14px;text-align:center}
+
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;border-radius:14px;border-bottom-right-radius:4px;padding:11px 16px;font-weight:600;font-size:14px;opacity:0;transition:all .3s;z-index:40;display:flex;gap:12px;align-items:center;pointer-events:none}
+#toast.on{opacity:1;transform:translateX(-50%);pointer-events:auto}
+#toast button{border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:9px;padding:4px 10px;font-weight:700}
+
+.modal{position:fixed;inset:0;z-index:50;background:rgba(35,25,115,.35);display:none;align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex}
+.mc{background:#fff;border-radius:24px;max-width:640px;width:100%;max-height:100%;overflow:auto;padding:28px 30px;position:relative}
+.mc::before{content:"";position:absolute;left:0;top:0;width:90px;height:90px;background:var(--red);clip-path:polygon(0 0,100% 0,0 100%);border-top-left-radius:24px}
+.mc h2{margin:0 0 10px;color:var(--navy);font-size:26px;font-weight:700;padding-left:34px}
+.mc h3{color:var(--navy);margin:18px 0 6px;font-size:16px}
+.mc p,.mc li{font-size:14.5px;line-height:1.6}
+.mc code{background:var(--lav2);border-radius:6px;padding:1px 6px;font-size:13px}
+.mc .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.mc .foot{margin-top:16px;font-size:12px;color:var(--muted)}
+@media (max-width:1180px){main{grid-template-columns:300px 1fr;grid-template-rows:1fr auto}#panel{grid-column:1/-1;max-height:420px}.hbtns{margin-right:90px}}
+@media (max-width:760px){main{grid-template-columns:1fr}.kpis{display:none}.mapwrap{min-height:420px}.ttl p{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="logo">
+    <img src="https://www.kempel.nl/wp-content/themes/dekempel/images/logo.svg" alt="Hogeschool de Kempel" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div class="fb"><svg width="38" height="38" viewBox="0 0 150 172"><path fill="#231973" d="M133.6,171.9H15.9c-8.8,0-15.9-7.1-15.9-15.9V38.3c0-14.1,17.1-21.2,27.1-11.2l117.7,117.7C154.8,154.8,147.8,171.9,133.6,171.9z"/><path fill="#F02837" d="M0,133.6V15.9C0,7.1,7.1,0,15.9,0h117.7c14.1,0,21.2,17.1,11.2,27.1L27.1,144.8C17.1,154.8,0,147.8,0,133.6z"/><path fill="#A50A28" d="M27.1,144.8L86,86L27.1,27.1C17.1,17.1,0,24.2,0,38.3v95.3C0,147.8,17.1,154.8,27.1,144.8z"/></svg><div style="font-size:22px">DE KEMPEL<small>HOGESCHOOL VOOR LERAREN</small></div></div>
+  </div>
+  <div class="sep"></div>
+  <div class="ttl"><h1>Stagematch</h1><p>Plaatsingen 2026–2027 · demo met fictieve gegevens</p></div>
+  <div class="kpis">
+    <div class="kpi"><small>Geplaatst</small><b id="kPl">0/0</b></div>
+    <div class="kpi bad"><small>Knelpunten</small><b id="kKn">0</b></div>
+    <div class="kpi"><small>Vrije plekken</small><b id="kVr">0</b></div>
+  </div>
+  <div class="hbtns">
+    <button class="btn" id="bUndo" title="Ongedaan maken (Ctrl+Z)">↶</button>
+    <button class="btn" id="bIo">Importeren / exporteren</button>
+    <button class="btn red" id="bHelp">Uitleg</button>
+  </div>
+</header>
+<main>
+  <section class="col" aria-label="Studenten">
+    <div class="colh">
+      <h2>Studenten</h2>
+      <div class="tabs"><button class="on" data-t="open">Te plaatsen <span id="nOpen"></span></button><button data-t="done">Geplaatst <span id="nDone"></span></button></div>
+      <div class="filters"><input id="q" placeholder="Zoek…" aria-label="Zoeken"><button class="chip on" data-y="0">Alle</button><button class="chip" data-y="1">1</button><button class="chip" data-y="2">2</button><button class="chip" data-y="3">3</button><button class="chip" data-y="4">4</button></div>
+    </div>
+    <div class="scroll" id="sList"></div>
+  </section>
+  <section class="mapwrap" aria-label="Kaart">
+    <svg id="map" viewBox="0 0 460 410" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="maph"><h2>Stagescholen rond Helmond</h2>
+      <div class="legend"><span><span class="dot g"></span>past goed</span><span><span class="dot o"></span>kan, met aandachtspunt</span><span><span class="dot r"></span>knelt</span></div></div>
+    <div class="hint" id="hint">Sleep een student naar een school, of klik op een student voor de beste opties</div>
+  </section>
+  <section class="col" id="panel" aria-live="polite"></section>
+</main>
+</div>
+<div id="tip"></div>
+<div id="toast"><span id="toastT"></span><button id="toastU">Ongedaan maken</button></div>
+
+<div class="modal" id="help"><div class="mc">
+  <h2>Zo werkt Stagematch</h2>
+  <p>Stagematch helpt het stagebureau om studenten bij stagescholen te plaatsen. Het bord <b>rekent bij elke plaatsing mee</b> en laat meteen zien waar het knelt.</p>
+  <h3>Plaatsen</h3>
+  <ul>
+    <li><b>Sleep</b> een student naar een school op de kaart, of naar het vak onderbouw of bovenbouw van een school.</li>
+    <li>Of <b>klik</b> op een student: je ziet de beste opties op volgorde, met reistijd en aandachtspunten.</li>
+    <li>Tijdens het slepen kleuren alle scholen: <span class="dot g"></span> past goed, <span class="dot o"></span> kan met aandachtspunt, <span class="dot r"></span> knelt.</li>
+  </ul>
+  <h3>Wat telt mee?</h3>
+  <ul>
+    <li><b>Plekken:</b> het aantal plekken voor onderbouw (groep 1–4) en bovenbouw (groep 5–8).</li>
+    <li><b>Reistijd</b> vanuit de woonplaats, met auto, fiets of OV. Een school zonder station in de buurt kost met OV extra tijd.</li>
+    <li><b>Leerlijn:</b> een student doet in de opleiding zowel onder- als bovenbouw.</li>
+    <li><b>Stagedagen:</b> de dagen van het studiejaar moeten passen bij de dagen waarop de mentoren beschikbaar zijn.</li>
+    <li><b>Wensen en eisen</b> van school en student, zoals "alleen jaar 3 en 4" of de specialisatie jonge kind.</li>
+    <li><b>Herhaling:</b> liever niet twee keer op dezelfde school.</li>
+  </ul>
+  <h3>Stagedagen per studiejaar (demo)</h3>
+  <p>Jaar 1: dinsdag · jaar 2: dinsdag en woensdag · jaar 3: woensdag en donderdag · jaar 4 (LIO): maandag t/m donderdag.</p>
+  <p class="foot">Demo voor Hogeschool de Kempel. Alle studenten en scholen zijn fictief; de plaatsnamen en afstanden zijn echt. Alles blijft in je eigen browser. Gemaakt door AI voor Docenten.</p>
+  <div class="row"><button class="btn red" id="helpClose">Aan de slag</button></div>
+</div></div>
+
+<div class="modal" id="io"><div class="mc">
+  <h2>Importeren en exporteren</h2>
+  <p>Werk je met je eigen lijst? Exporteer uit Excel als <b>CSV met puntkomma's</b>. Gebruik de voorbeeldbestanden voor de juiste kolommen.</p>
+  <h3>Exporteren</h3>
+  <div class="row"><button class="btn red" id="exPl">Plaatsingen als CSV (Excel)</button></div>
+  <h3>Importeren</h3>
+  <p style="margin:0">Studenten: <code>naam;jaar;woonplaats;vervoer;wens;eerdere_scholen</code><br>Scholen: <code>naam;plaats;plekken_ob;plekken_bb;dagen;jaren</code></p>
+  <div class="row">
+    <label class="btn">Studenten importeren<input type="file" id="imS" accept=".csv,text/csv" hidden></label>
+    <label class="btn">Scholen importeren<input type="file" id="imSc" accept=".csv,text/csv" hidden></label>
+    <button class="btn sm" id="tpS">Voorbeeld studenten</button><button class="btn sm" id="tpSc">Voorbeeld scholen</button>
+  </div>
+  <h3>Opnieuw beginnen</h3>
+  <div class="row"><button class="btn" id="reset">Demo opnieuw laden</button></div>
+  <p class="foot">Er gaat niets naar een server: importeren, rekenen en exporteren gebeurt allemaal in je browser. Je werk wordt alleen op dit apparaat bewaard.</p>
+  <div class="row"><button class="btn red" id="ioClose">Sluiten</button></div>
+</div></div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get(k){try{return JSON.parse(localStorage.getItem(k));}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
+
+/* ================= plaatsen (echte coördinaten) ================= */
+const TOWNS={
+ 'Helmond':[51.4793,5.6570,1],'Eindhoven':[51.4416,5.4697,1],'Geldrop':[51.4211,5.5574,1],'Mierlo':[51.4404,5.6189,0],'Nuenen':[51.4705,5.5520,0],
+ 'Deurne':[51.4639,5.7961,1],'Asten':[51.4034,5.7476,0],'Someren':[51.3850,5.7139,0],'Gemert':[51.5556,5.6890,0],'Beek en Donk':[51.5341,5.6309,0],
+ 'Lieshout':[51.5170,5.5961,0],'Bakel':[51.5036,5.7400,0],'Son en Breugel':[51.5126,5.4932,0],'Heeze':[51.3827,5.5710,1],'Mariahout':[51.5410,5.5700,0],
+ 'Vlierden':[51.4430,5.7640,0],'Lierop':[51.4210,5.6780,0],'Stiphout':[51.4919,5.6136,0],'Brandevoort':[51.4613,5.6150,1]};
+const K=1900;const P=(lat,lon)=>[(lon-5.435)*K*.622,(51.585-lat)*K];
+function km(a,b){const R=6371,dLa=(b[0]-a[0])*Math.PI/180,dLo=(b[1]-a[1])*Math.PI/180;const h=Math.sin(dLa/2)**2+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(h));}
+
+/* ================= demo-gegevens (fictief) ================= */
+const DAYS={1:['di'],2:['di','wo'],3:['wo','do'],4:['ma','di','wo','do']};
+const DAYN={ma:'maandag',di:'dinsdag',wo:'woensdag',do:'donderdag',vr:'vrijdag'};
+const ALL=['ma','di','wo','do','vr'];
+const DEMO_SCHOOLS=[
+ {id:'regenboog',n:'De Regenboog',t:'Brandevoort',ob:2,bb:1,d:ALL},
+ {id:'baken',n:"'t Baken",t:'Helmond',ob:1,bb:2,d:ALL,dx:6,dy:22},
+ {id:'vlinder',n:'De Vlinder',t:'Stiphout',ob:1,bb:1,d:ALL},
+ {id:'kastanje',n:'De Kastanje',t:'Helmond',ob:1,bb:1,d:['ma','di','wo'],dx:28,dy:-6},
+ {id:'palet',n:'Het Palet',t:'Eindhoven',ob:1,bb:2,d:ALL,y:[3,4],dx:-14,dy:-14},
+ {id:'wereldwijzer',n:'De Wereldwijzer',t:'Eindhoven',ob:2,bb:1,d:ALL,y:[1,2,3],dx:16,dy:12},
+ {id:'sintjozef',n:'Sint-Jozef',t:'Mierlo',ob:1,bb:1,d:ALL},
+ {id:'toermalijn',n:'De Toermalijn',t:'Geldrop',ob:1,bb:1,d:ALL},
+ {id:'klokhuis',n:'Het Klokhuis',t:'Nuenen',ob:2,bb:1,d:['ma','di','wo','do']},
+ {id:'peelparel',n:'De Peelparel',t:'Deurne',ob:1,bb:2,d:ALL},
+ {id:'zonnewijzer',n:'De Zonnewijzer',t:'Asten',ob:1,bb:1,d:['wo','do','vr']},
+ {id:'bolster',n:'De Bolster',t:'Someren',ob:1,bb:1,d:ALL},
+ {id:'kameleon',n:'De Kameleon',t:'Gemert',ob:1,bb:2,d:ALL},
+ {id:'kompas',n:'Het Kompas',t:'Beek en Donk',ob:1,bb:1,d:ALL},
+ {id:'linde',n:'De Linde',t:'Bakel',ob:1,bb:1,d:ALL,y:[2,3,4]},
+ {id:'sterrenwacht',n:'De Sterrenwacht',t:'Lieshout',ob:1,bb:1,d:ALL},
+ {id:'wieken',n:'De Wieken',t:'Heeze',ob:1,bb:1,d:ALL},
+ {id:'brug',n:'De Brug',t:'Son en Breugel',ob:1,bb:1,d:ALL},
+ {id:'meander',n:'De Meander',t:'Vlierden',ob:1,bb:0,d:ALL}];
+const DEMO_STUDENTS=[
+ {id:'s1',n:'Lisa van Dijk',y:1,t:'Helmond',v:'fiets'},
+ {id:'s2',n:'Daan Verhoeven',y:1,t:'Eindhoven',v:'ov'},
+ {id:'s3',n:'Sanne Hendriks',y:1,t:'Deurne',v:'auto'},
+ {id:'s4',n:'Mohamed El Idrissi',y:1,t:'Helmond',v:'ov'},
+ {id:'s5',n:'Femke Jansen',y:1,t:'Gemert',v:'auto'},
+ {id:'s6',n:'Noa de Bruijn',y:1,t:'Nuenen',v:'fiets'},
+ {id:'s7',n:'Tim Peters',y:1,t:'Asten',v:'ov'},
+ {id:'s27',n:'Niels Bosch',y:1,t:'Mariahout',v:'auto'},
+ {id:'s8',n:'Iris van den Heuvel',y:2,t:'Mierlo',v:'fiets',h:[['sintjozef','ob']]},
+ {id:'s9',n:'Yasmine Bakkali',y:2,t:'Eindhoven',v:'ov',h:[['wereldwijzer','bb']]},
+ {id:'s10',n:'Bart Smits',y:2,t:'Someren',v:'auto',h:[['bolster','ob']]},
+ {id:'s11',n:'Eline Kuijpers',y:2,t:'Helmond',v:'ov',h:[['baken','ob']],w:'ob',sp:'Jonge kind'},
+ {id:'s12',n:'Joep van Lieshout',y:2,t:'Bakel',v:'auto',h:[['linde','bb']]},
+ {id:'s13',n:'Romy Swinkels',y:2,t:'Geldrop',v:'ov',h:[['toermalijn','ob']]},
+ {id:'s14',n:'Sem Verbeek',y:2,t:'Beek en Donk',v:'fiets',h:[['kompas','bb']]},
+ {id:'s28',n:'Julia Willems',y:2,t:'Vlierden',v:'auto',h:[['peelparel','ob']]},
+ {id:'s15',n:'Anouk Raaijmakers',y:3,t:'Helmond',v:'auto',h:[['vlinder','ob'],['regenboog','ob']]},
+ {id:'s16',n:'Thijs Coolen',y:3,t:'Deurne',v:'ov',h:[['peelparel','bb'],['kameleon','ob']]},
+ {id:'s17',n:'Fleur Martens',y:3,t:'Eindhoven',v:'fiets',h:[['wereldwijzer','ob'],['palet','bb']]},
+ {id:'s18',n:'Ruben van Gerwen',y:3,t:'Heeze',v:'ov',h:[['wieken','bb'],['toermalijn','bb']]},
+ {id:'s19',n:'Lotte Aarts',y:3,t:'Lieshout',v:'auto',h:[['sterrenwacht','ob'],['kompas','bb']],w:'ob',sp:'Jonge kind'},
+ {id:'s20',n:'Jesse Hoogstraten',y:3,t:'Stiphout',v:'fiets',h:[['regenboog','bb'],['sintjozef','ob']]},
+ {id:'s21',n:'Zeynep Yilmaz',y:3,t:'Helmond',v:'ov',h:[['baken','bb'],['vlinder','ob']]},
+ {id:'s22',n:'Mila Rutten',y:4,t:'Asten',v:'auto',h:[['bolster','ob'],['zonnewijzer','bb'],['peelparel','ob']]},
+ {id:'s23',n:'Bram Theunissen',y:4,t:'Gemert',v:'auto',h:[['kameleon','bb'],['kompas','bb'],['linde','ob']],w:'bb'},
+ {id:'s24',n:'Sophie de Groot',y:4,t:'Nuenen',v:'fiets',h:[['klokhuis','ob'],['wereldwijzer','ob'],['toermalijn','ob']]},
+ {id:'s25',n:'Lucas Vos',y:4,t:'Son en Breugel',v:'ov',h:[['brug','bb'],['palet','ob'],['wereldwijzer','bb']]},
+ {id:'s26',n:'Amira Haddou',y:4,t:'Eindhoven',v:'ov',h:[['palet','bb'],['klokhuis','ob'],['wereldwijzer','ob']]}];
+// startsituatie: een deel is al geplaatst, met een paar bewuste knelpunten
+const DEMO_PLACED={s1:['regenboog','ob'],s3:['peelparel','ob'],s5:['kameleon','ob'],s6:['klokhuis','ob'],s7:['brug','ob'],s8:['regenboog','bb'],s4:['baken','ob'],s11:['baken','ob'],
+ s15:['vlinder','ob'],s21:['kastanje','bb'],s23:['sterrenwacht','bb'],s14:['sterrenwacht','ob'],s19:['klokhuis','ob'],s26:['toermalijn','bb']};
+
+let SCHOOLS,STUDENTS,PL,undo=[],sel=null,selSchool=null,tab='open',yf=0,q='',drag=null;
+function load(){const s=store.get('stagematch-v1');if(s&&s.schools&&s.students){SCHOOLS=s.schools;STUDENTS=s.students;PL=s.pl||{};}else demo();}
+function demo(){SCHOOLS=JSON.parse(JSON.stringify(DEMO_SCHOOLS));STUDENTS=JSON.parse(JSON.stringify(DEMO_STUDENTS));PL=JSON.parse(JSON.stringify(DEMO_PLACED));}
+function save(){store.set('stagematch-v1',{schools:SCHOOLS,students:STUDENTS,pl:PL});}
+const S=id=>SCHOOLS.find(x=>x.id===id),ST=id=>STUDENTS.find(x=>x.id===id);
+function townLL(t){return TOWNS[t]||TOWNS['Helmond'];}
+function schoolLL(s){const t=townLL(s.t);return [t[0]-(s.dy||0)*.0007,t[1]+(s.dx||0)*.0011];}
+
+/* ================= de regels ================= */
+const VERV={auto:'auto',fiets:'fiets',ov:'OV'};
+function travel(st,sc){const a=townLL(st.t),b=schoolLL(sc);const d=Math.max(1.5,km(a,b));let m;
+  if(st.v==='auto')m=6+d*1.3/48*60;else if(st.v==='fiets')m=3+d*1.2/15*60;else{m=12+d*1.35/32*60;if(!townLL(sc.t)[2])m+=14;if(!townLL(st.t)[2])m+=8;}
+  return {min:Math.round(m),km:d};}
+const used=(sid,b,except)=>Object.entries(PL).filter(([k,v])=>v[0]===sid&&v[1]===b&&k!==except).length;
+// beoordeel student st bij school sc in bouw b → {lvl:0 groen,1 oranje,2 rood, why:[...]}
+function judge(st,sc,b){const why=[];let lvl=0;const add=(l,t)=>{why.push({l,t});lvl=Math.max(lvl,l);};
+  const tr=travel(st,sc);
+  if(tr.min>55)add(2,`Reistijd ${tr.min} min met ${VERV[st.v]}`);else if(tr.min>35)add(1,`Reistijd ${tr.min} min met ${VERV[st.v]}`);
+  const cap=sc[b]||0,n=used(sc.id,b,st.id);if(cap===0)add(2,`Geen ${b==='ob'?'onderbouw':'bovenbouw'}plekken`);else if(n>=cap)add(2,`${b==='ob'?'Onderbouw':'Bovenbouw'} is vol (${n}/${cap})`);
+  const need=DAYS[st.y]||[];const miss=need.filter(d=>!sc.d.includes(d));if(miss.length)add(2,`Mentor niet beschikbaar op ${miss.map(d=>DAYN[d]).join(' en ')}`);
+  if(sc.y&&!sc.y.includes(st.y))add(2,`School neemt alleen jaar ${sc.y.join(', ')}`);
+  const h=st.h||[];const nb=h.filter(x=>x[1]===b).length,no=h.filter(x=>x[1]!==b).length;const other=b==='ob'?'bovenbouw':'onderbouw';
+  if(no===0&&nb>=2)add(2,`Leerlijn: nog nooit ${other} gehad`);else if(no===0&&nb>=1&&st.y>=2)add(1,`Leerlijn: nog geen ${other} gehad`);
+  if(h.some(x=>x[0]===sc.id))add(1,'Liep hier eerder stage');
+  if(st.w&&st.w!==b)add(1,`Wens: ${st.w==='ob'?'onderbouw':'bovenbouw'}`);
+  return {lvl,why,tr};}
+function bestBouw(st,sc){const a=judge(st,sc,'ob'),c=judge(st,sc,'bb');if(a.lvl!==c.lvl)return a.lvl<c.lvl?['ob',a]:['bb',c];
+  const pref=st.w||((st.h||[]).filter(x=>x[1]==='ob').length>(st.h||[]).filter(x=>x[1]==='bb').length?'bb':'ob');return pref==='ob'?['ob',a]:['bb',c];}
+function options(st){return SCHOOLS.map(sc=>{const [b,j]=bestBouw(st,sc);return {sc,b,j};}).sort((x,y)=>x.j.lvl-y.j.lvl||x.j.why.length-y.j.why.length||x.j.tr.min-y.j.tr.min);}
+function fitCount(st){return SCHOOLS.reduce((n,sc)=>n+(bestBouw(st,sc)[1].lvl===0?1:0),0);}
+function issues(){const out=[];
+  Object.entries(PL).forEach(([sid,[scid,b]])=>{const st=ST(sid),sc=S(scid);if(!st||!sc)return;const j=judge(st,sc,b);j.why.forEach(w=>{if(w.l>0)out.push({lvl:w.l,st,sc,b,t:w.t});});});
+  SCHOOLS.forEach(sc=>['ob','bb'].forEach(b=>{const n=used(sc.id,b);if(n>(sc[b]||0))out.push({lvl:2,sc,b,t:`${n} studenten op ${sc[b]||0} ${b==='ob'?'onderbouw':'bovenbouw'}plek${(sc[b]||0)===1?'':'ken'}`,cap:1});}));
+  // capaciteit staat al per student; ontdubbel 'vol'-meldingen
+  return out.filter(i=>!(i.st&&/vol \(/.test(i.t))).sort((a,b)=>b.lvl-a.lvl);}
+
+/* ================= kaart ================= */
+const svg=$('#map');const NS='http://www.w3.org/2000/svg';
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);(parent||svg).appendChild(e);return e;}
+const line=pts=>pts.map((t,i)=>{const [x,y]=P(...(Array.isArray(t)?t:TOWNS[t]));return (i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);}).join(' ');
+let gLines,gSchools,gHome;
+function drawBase(){svg.innerHTML='';
+  const defs=el('defs',{});const pat=el('pattern',{id:'grid',width:20,height:20,patternUnits:'userSpaceOnUse'},defs);el('path',{d:'M20 0H0V20',fill:'none',stroke:'#e9e8f4','stroke-width':1},pat);
+  el('rect',{x:0,y:0,width:460,height:410,fill:'#f7f7fc'});el('rect',{x:0,y:0,width:460,height:410,fill:'url(#grid)'});
+  // stedelijk gebied
+  [['Eindhoven',34],['Helmond',22],['Geldrop',11],['Deurne',10],['Nuenen',9],['Son en Breugel',8],['Gemert',9],['Someren',8],['Asten',8],['Mierlo',7],['Heeze',7],['Beek en Donk',7],['Lieshout',6],['Bakel',6],['Mariahout',5],['Vlierden',5],['Lierop',5],['Stiphout',6],['Brandevoort',7]].forEach(([t,r])=>{const [x,y]=P(...TOWNS[t]);el('circle',{cx:x,cy:y,r,fill:'#ebeaf6'});});
+  // water: Zuid-Willemsvaart en Eindhovens Kanaal
+  el('path',{d:line([[51.64,5.535],[51.60,5.565],'Beek en Donk',[51.505,5.645],[51.485,5.655],[51.465,5.668],[51.43,5.69],[51.39,5.705],[51.36,5.715]]),fill:'none',stroke:'#c9d8f3','stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round'});
+  el('path',{d:line([[51.447,5.50],[51.457,5.56],[51.468,5.61],[51.478,5.645]]),fill:'none',stroke:'#c9d8f3','stroke-width':3,'stroke-linecap':'round'});
+  // wegen
+  const road=(pts,w)=>{el('path',{d:line(pts),fill:'none',stroke:'#fff','stroke-width':w+3,'stroke-linecap':'round','stroke-linejoin':'round'});el('path',{d:line(pts),fill:'none',stroke:'#d9d7ec','stroke-width':w,'stroke-linecap':'round','stroke-linejoin':'round'});};
+  road(['Eindhoven',[51.455,5.56],'Helmond'],3.2);road(['Eindhoven',[51.425,5.53],[51.41,5.62],[51.405,5.70],'Asten',[51.40,5.85]],3.2);road(['Helmond','Beek en Donk',[51.58,5.59],[51.64,5.55]],2.6);road(['Helmond','Deurne',[51.47,5.85]],2.6);
+  road(['Eindhoven','Son en Breugel',[51.58,5.47],[51.64,5.45]],2.6);road(['Helmond','Gemert'],2);road(['Helmond','Mierlo','Geldrop','Heeze'],1.8);road(['Helmond','Someren'],1.8);road(['Nuenen','Helmond'],1.6);road(['Lieshout','Mariahout'],1.4);road(['Deurne','Bakel','Gemert'],1.4);
+  // spoor
+  el('path',{d:line(['Eindhoven','Geldrop',[51.455,5.62],'Helmond','Deurne',[51.47,5.85]]),fill:'none',stroke:'#a9a6c8','stroke-width':1.4,'stroke-dasharray':'5 3'});
+  el('path',{d:line(['Eindhoven','Heeze',[51.36,5.60]]),fill:'none',stroke:'#a9a6c8','stroke-width':1.4,'stroke-dasharray':'5 3'});
+  // plaatsnamen
+  Object.entries(TOWNS).forEach(([t,c])=>{if(t==='Stiphout'||t==='Brandevoort')return;const [x,y]=P(c[0],c[1]);const tx=el('text',{x,y:y+(t==='Helmond'?-24:t==='Eindhoven'?54:20),class:'town','text-anchor':'middle'});tx.textContent=t;});
+  // de Kempel
+  const [kx,ky]=P(51.4905,5.6600);const k=el('g',{transform:`translate(${kx-9},${ky-10}) scale(.12)`});
+  el('path',{fill:'#231973',d:'M133.6,171.9H15.9c-8.8,0-15.9-7.1-15.9-15.9V38.3c0-14.1,17.1-21.2,27.1-11.2l117.7,117.7C154.8,154.8,147.8,171.9,133.6,171.9z'},k);
+  el('path',{fill:'#F02837',d:'M0,133.6V15.9C0,7.1,7.1,0,15.9,0h117.7c14.1,0,21.2,17.1,11.2,27.1L27.1,144.8C17.1,154.8,0,147.8,0,133.6z'},k);
+  el('path',{fill:'#A50A28',d:'M27.1,144.8L86,86L27.1,27.1C17.1,17.1,0,24.2,0,38.3v95.3C0,147.8,17.1,154.8,27.1,144.8z'},k);
+  gLines=el('g',{});gHome=el('g',{});gSchools=el('g',{});}
+const COL={0:'#1f9d63',1:'#e9900c',2:'#F02837'};
+function drawSchools(){gSchools.innerHTML='';gLines.innerHTML='';gHome.innerHTML='';
+  const focus=drag||sel;const fst=focus?ST(focus):null;
+  if(fst){const [hx,hy]=P(...townLL(fst.t));
+    SCHOOLS.forEach(sc=>{const [b,j]=bestBouw(fst,sc);const cur=PL[fst.id]&&PL[fst.id][0]===sc.id;if(!drag&&!cur&&j.lvl===2)return;const [x,y]=P(...schoolLL(sc));
+      el('line',{x1:hx,y1:hy,x2:x,y2:y,stroke:COL[j.lvl],'stroke-width':cur?2.6:1.3,'stroke-opacity':cur?.95:.45,'stroke-dasharray':cur?'':'3 3'},gLines);});
+    el('circle',{cx:hx,cy:hy,r:7,fill:'#231973',stroke:'#fff','stroke-width':2.5},gHome);const ht=el('text',{x:hx,y:hy-11,'text-anchor':'middle',fill:'#231973','font-size':10,'font-weight':700,'font-family':'Quicksand'},gHome);ht.textContent='🏠 '+fst.n.split(' ')[0];}
+  SCHOOLS.forEach(sc=>{const [x,y]=P(...schoolLL(sc));const cap=(sc.ob||0)+(sc.bb||0),n=used(sc.id,'ob')+used(sc.id,'bb');
+    const over=used(sc.id,'ob')>(sc.ob||0)||used(sc.id,'bb')>(sc.bb||0);const hasIssue=Object.entries(PL).some(([sid,v])=>v[0]===sc.id&&ST(sid)&&judge(ST(sid),sc,v[1]).lvl===2);
+    let fill='#fff',stroke='#231973',txt='#231973',ring=null;
+    if(fst){const j=bestBouw(fst,sc)[1];stroke=COL[j.lvl];ring=COL[j.lvl];}
+    else if(over||hasIssue){stroke='#F02837';txt='#F02837';}else if(n>=cap){fill='#231973';txt='#fff';}
+    const g=el('g',{class:'school',transform:`translate(${x},${y})`,'data-id':sc.id},gSchools);
+    if(selSchool===sc.id)el('circle',{r:17,fill:'none',stroke:'#231973','stroke-width':2,'stroke-dasharray':'3 2'},g);
+    if(ring)el('circle',{r:15,fill:ring,'fill-opacity':.16},g);
+    el('rect',{x:-13,y:-9,width:26,height:18,rx:7,fill,stroke,'stroke-width':ring?2.6:2},g);
+    const t=el('text',{y:4,'text-anchor':'middle','font-size':10,fill:fst?COL[bestBouw(fst,sc)[1].lvl]:txt},g);t.textContent=`${n}/${cap}`;
+    g.addEventListener('mouseenter',e=>tipShow(e,schoolTip(sc)));g.addEventListener('mousemove',tipMove);g.addEventListener('mouseleave',tipHide);
+    g.addEventListener('click',()=>{selSchool=sc.id;sel=null;render();});
+    g.addEventListener('dragover',e=>{e.preventDefault();});g.addEventListener('drop',e=>{e.preventDefault();const id=e.dataTransfer.getData('text/plain')||drag;if(id){const st=ST(id);place(id,sc.id,bestBouw(st,sc)[0]);}});});}
+function schoolTip(sc){const fst=(drag||sel)?ST(drag||sel):null;let h=`<b>${esc(sc.n)}</b> · ${esc(sc.t)}<br>Onderbouw ${used(sc.id,'ob')}/${sc.ob||0} · bovenbouw ${used(sc.id,'bb')}/${sc.bb||0}`;
+  if(fst){const [b,j]=bestBouw(fst,sc);h+=`<br><br>${esc(fst.n.split(' ')[0])}: ${b==='ob'?'onderbouw':'bovenbouw'}, ${j.tr.min} min<br>`+(j.why.length?j.why.map(w=>`${w.l===2?'✗':'!'} ${esc(w.t)}`).join('<br>'):'✓ Past goed');}return h;}
+const tip=$('#tip');function tipShow(e,h){tip.innerHTML=h;tip.style.display='block';tipMove(e);}function tipMove(e){tip.style.left=Math.min(innerWidth-270,e.clientX+14)+'px';tip.style.top=(e.clientY+14)+'px';}function tipHide(){tip.style.display='none';}
+
+/* ================= acties ================= */
+function place(sid,scid,b){undo.push(JSON.stringify(PL));if(undo.length>60)undo.shift();const st=ST(sid),sc=S(scid);PL[sid]=[scid,b];save();
+  const j=judge(st,sc,b);toast(`${st.n.split(' ')[0]} → ${sc.n} (${b==='ob'?'onderbouw':'bovenbouw'})`+(j.lvl===2?' · knelt':j.lvl===1?' · let op':' · past goed'));sel=sid;selSchool=null;drag=null;render();}
+function unplace(sid){undo.push(JSON.stringify(PL));delete PL[sid];save();toast(`${ST(sid).n.split(' ')[0]} staat weer bij "te plaatsen"`);render();}
+function swapBouw(sid){const v=PL[sid];if(!v)return;place(sid,v[0],v[1]==='ob'?'bb':'ob');}
+function doUndo(){if(!undo.length){toast('Niets om ongedaan te maken');return;}PL=JSON.parse(undo.pop());save();render();toast('Ongedaan gemaakt');}
+let tT;function toast(t){$('#toastT').textContent=t;$('#toast').classList.add('on');clearTimeout(tT);tT=setTimeout(()=>$('#toast').classList.remove('on'),3200);}
+
+/* ================= lijsten ================= */
+const YCOL={1:'#F02837',2:'#e9900c',3:'#3a7bd5',4:'#231973'};
+const initials=n=>n.split(' ').filter(w=>/^[A-Z]/.test(w)).map(w=>w[0]).slice(0,2).join('');
+function renderStudents(){const open=STUDENTS.filter(s=>!PL[s.id]),done=STUDENTS.filter(s=>PL[s.id]);$('#nOpen').textContent=`(${open.length})`;$('#nDone').textContent=`(${done.length})`;
+  let list=(tab==='open'?open:done).filter(s=>(!yf||s.y===yf)&&(!q||(s.n+' '+s.t).toLowerCase().includes(q)));
+  list=list.map(s=>({s,f:fitCount(s),j:PL[s.id]?judge(s,S(PL[s.id][0]),PL[s.id][1]):null}));
+  if(tab==='open')list.sort((a,b)=>a.f-b.f||b.s.y-a.s.y);else list.sort((a,b)=>b.j.lvl-a.j.lvl||a.s.n.localeCompare(b.s.n));
+  $('#sList').innerHTML=list.length?list.map(({s,f,j})=>{const h=(s.h||[]).map(x=>x[1]==='ob'?'OB':'BB').join(' · ');
+    let badge;if(tab==='open')badge=f===0?'<span class="fit r">0 passend</span>':f<=2?`<span class="fit o">${f} passend</span>`:`<span class="fit g">${f} passend</span>`;
+    else badge=`<span class="fit ${['g','o','r'][j.lvl]}">${['past','let op','knelt'][j.lvl]}</span>`;
+    const where=PL[s.id]?`<br>→ ${esc(S(PL[s.id][0]).n)} (${PL[s.id][1]==='ob'?'OB':'BB'})`:'';
+    return `<div class="sc ${sel===s.id?'sel':''}" draggable="true" data-id="${s.id}"><div class="av" style="background:${YCOL[s.y]}">${initials(s.n)}</div><div><b>${esc(s.n)}</b><div class="meta">Jaar ${s.y} · ${esc(s.t)} · ${VERV[s.v]}${h?`<br>Eerder: ${h}`:''}${s.w?` · wens ${s.w==='ob'?'OB':'BB'}`:''}${where}</div></div>${badge}</div>`;}).join(''):`<div class="empty">${tab==='open'?'Iedereen is geplaatst 🎉':'Nog niemand geplaatst.'}</div>`;
+  $$('#sList .sc').forEach(c=>{const id=c.dataset.id;c.addEventListener('click',()=>{sel=sel===id?null:id;selSchool=null;render();});
+    c.addEventListener('dragstart',e=>{drag=id;e.dataTransfer.setData('text/plain',id);e.dataTransfer.effectAllowed='move';c.classList.add('dragging');$('#hint').style.opacity=0;drawSchools();});
+    c.addEventListener('dragend',()=>{drag=null;c.classList.remove('dragging');$('#hint').style.opacity=1;drawSchools();});});}
+function renderPanel(){const p=$('#panel');
+  if(selSchool){const sc=S(selSchool);const slot=b=>{const ids=Object.entries(PL).filter(([k,v])=>v[0]===sc.id&&v[1]===b).map(([k])=>k);const cap=sc[b]||0;
+      return `<div class="slot" data-b="${b}"><div class="sh"><span>${b==='ob'?'Onderbouw (groep 1–4)':'Bovenbouw (groep 5–8)'}</span><em class="${ids.length>cap?'bad':''}">${ids.length}/${cap}</em></div>${ids.map(id=>{const st=ST(id),j=judge(st,sc,b);
+        return `<div class="pchip"><span class="dot ${['g','o','r'][j.lvl]}"></span><b data-st="${id}">${esc(st.n)}</b><small>jr ${st.y} · ${j.tr.min} min</small><button data-sw="${id}" title="Wissel onder/bovenbouw">⇄</button><button data-rm="${id}" title="Verwijderen">×</button></div>${j.why.length?`<ul class="why">${j.why.map(w=>`<li>${w.l===2?'✗':'!'} ${esc(w.t)}</li>`).join('')}</ul>`:''}`;}).join('')||'<div class="why">Sleep hier een student naartoe.</div>'}</div>`;};
+    p.innerHTML=`<div class="ph"><h2>${esc(sc.n)}</h2><p>${esc(sc.t)} · basisschool (fictief)</p><button class="x" id="pX" aria-label="Sluiten">×</button></div><div class="scroll">
+      <div class="sec"><dl class="facts"><dt>Mentoren op</dt><dd>${sc.d.map(d=>DAYN[d]).join(', ')}</dd><dt>Studiejaren</dt><dd>${sc.y?'alleen jaar '+sc.y.join(', '):'alle jaren'}</dd><dt>Plekken</dt><dd>${sc.ob||0} onderbouw · ${sc.bb||0} bovenbouw</dd></dl></div>
+      <div class="sec"><h3>Plaatsingen</h3>${slot('ob')}${slot('bb')}</div></div>`;
+    $('#pX').onclick=()=>{selSchool=null;render();};
+    $$('#panel .slot').forEach(s=>{s.addEventListener('dragover',e=>{e.preventDefault();s.classList.add('over');});s.addEventListener('dragleave',()=>s.classList.remove('over'));s.addEventListener('drop',e=>{e.preventDefault();const id=e.dataTransfer.getData('text/plain')||drag;if(id)place(id,sc.id,s.dataset.b);});});
+    $$('#panel [data-rm]').forEach(b=>b.onclick=()=>unplace(b.dataset.rm));$$('#panel [data-sw]').forEach(b=>b.onclick=()=>swapBouw(b.dataset.sw));$$('#panel [data-st]').forEach(b=>b.onclick=()=>{sel=b.dataset.st;selSchool=null;render();});return;}
+  if(sel){const st=ST(sel);const cur=PL[st.id];const opts=options(st);const top=opts.filter(o=>o.j.lvl<2).slice(0,6);const curJ=cur?judge(st,S(cur[0]),cur[1]):null;
+    p.innerHTML=`<div class="ph"><h2>${esc(st.n)}</h2><p>Jaar ${st.y} · stagedagen: ${(DAYS[st.y]||[]).map(d=>DAYN[d]).join(' en ')}</p><button class="x" id="pX" aria-label="Sluiten">×</button></div><div class="scroll">
+      <div class="sec"><dl class="facts"><dt>Woont in</dt><dd>${esc(st.t)}</dd><dt>Reist met</dt><dd>${VERV[st.v]}</dd>${st.w?`<dt>Wens</dt><dd>${st.w==='ob'?'onderbouw':'bovenbouw'}</dd>`:''}${st.sp?`<dt>Specialisatie</dt><dd>${esc(st.sp)}</dd>`:''}</dl></div>
+      <div class="sec"><h3>Eerdere stages</h3><div class="hist">${(st.h||[]).length?(st.h||[]).map((x,i)=>`<span>Jaar ${i+1}: ${esc(S(x[0])?S(x[0]).n:x[0])} · ${x[1]==='ob'?'OB':'BB'}</span>`).join(''):'<span>Eerste stage</span>'}</div></div>
+      ${cur?`<div class="sec"><h3>Nu geplaatst</h3><div class="opt cur"><span class="dot ${['g','o','r'][curJ.lvl]}"></span><div><b>${esc(S(cur[0]).n)} · ${cur[1]==='ob'?'onderbouw':'bovenbouw'}</b><span>${esc(S(cur[0]).t)} · ${curJ.tr.min} min</span>${curJ.why.length?`<ul class="why">${curJ.why.map(w=>`<li>${w.l===2?'✗':'!'} ${esc(w.t)}</li>`).join('')}</ul>`:'<span>✓ Past goed</span>'}</div><button class="btn sm" data-rm="${st.id}">Losmaken</button></div></div>`:''}
+      <div class="sec"><h3>Beste opties</h3>${top.length?top.map(o=>`<div class="opt"><span class="dot ${['g','o','r'][o.j.lvl]}"></span><div><b>${esc(o.sc.n)} · ${o.b==='ob'?'OB':'BB'}</b><span>${esc(o.sc.t)} · ${o.j.tr.min} min${o.j.why.length?' · '+o.j.why.map(w=>esc(w.t)).join(' · '):''}</span></div><button class="btn sm" data-pl="${o.sc.id}|${o.b}">Plaats</button></div>`).join(''):'<div class="why">Geen school past zonder knelpunt. Overleg met de student of kijk naar extra plekken.</div>'}</div></div>`;
+    $('#pX').onclick=()=>{sel=null;render();};$$('#panel [data-pl]').forEach(b=>b.onclick=()=>{const [s,bb]=b.dataset.pl.split('|');place(st.id,s,bb);});$$('#panel [data-rm]').forEach(b=>b.onclick=()=>unplace(b.dataset.rm));return;}
+  const is=issues();const open=STUDENTS.filter(s=>!PL[s.id]);const hard=open.map(s=>({s,f:fitCount(s)})).filter(x=>x.f<=1).sort((a,b)=>a.f-b.f);
+  p.innerHTML=`<div class="ph"><h2>Waar knelt het?</h2><p>Klik op een knelpunt om het op te lossen</p></div><div class="scroll">
+    <div class="sec"><h3>Plaatsingen met een knelpunt (${is.length})</h3>${is.length?is.map((i,k)=>`<div class="issue" data-k="${k}"><span class="dot ${i.lvl===2?'r':'o'}"></span><div><b>${i.st?esc(i.st.n)+' → '+esc(i.sc.n):esc(i.sc.n)}</b><span>${esc(i.t)}</span></div></div>`).join(''):'<div class="good">Geen knelpunten in de plaatsingen 🎉</div>'}</div>
+    <div class="sec"><h3>Lastig te plaatsen (${hard.length})</h3>${hard.length?hard.map(({s,f})=>`<div class="issue" data-s="${s.id}"><span class="dot ${f===0?'r':'o'}"></span><div><b>${esc(s.n)}</b><span>Jaar ${s.y} · ${esc(s.t)} · ${VERV[s.v]} · ${f===0?'geen school past zonder knelpunt':'maar 1 school past goed'}</span></div></div>`).join(''):'<div class="why">Voor alle open studenten zijn er meerdere goede opties.</div>'}</div></div>`;
+  $$('#panel .issue[data-k]').forEach(d=>d.onclick=()=>{const i=is[+d.dataset.k];if(i.st){sel=i.st.id;selSchool=null;}else{selSchool=i.sc.id;sel=null;}render();});
+  $$('#panel .issue[data-s]').forEach(d=>d.onclick=()=>{sel=d.dataset.s;selSchool=null;render();});}
+function renderKpis(){const n=Object.keys(PL).filter(k=>ST(k)).length;$('#kPl').textContent=`${n}/${STUDENTS.length}`;$('#kKn').textContent=issues().filter(i=>i.lvl===2).length;
+  const free=SCHOOLS.reduce((a,sc)=>a+Math.max(0,(sc.ob||0)-used(sc.id,'ob'))+Math.max(0,(sc.bb||0)-used(sc.id,'bb')),0);$('#kVr').textContent=free;}
+function render(){renderStudents();drawSchools();renderPanel();renderKpis();}
+
+/* ================= CSV ================= */
+function csvParse(t){const lines=t.replace(/\r/g,'').split('\n').filter(l=>l.trim());const sep=lines[0].includes(';')?';':',';const head=lines[0].split(sep).map(h=>h.trim().toLowerCase());return lines.slice(1).map(l=>{const c=l.split(sep);const o={};head.forEach((h,i)=>o[h]=(c[i]||'').trim());return o;});}
+function download(name,text){const b=new Blob(['﻿'+text],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);}
+$('#exPl').onclick=()=>{const rows=[['student','jaar','woonplaats','school','plaats','bouw','reistijd_min','status','aandachtspunten']];
+  STUDENTS.forEach(st=>{const v=PL[st.id];if(!v){rows.push([st.n,st.y,st.t,'','','','','niet geplaatst','']);return;}const sc=S(v[0]);const j=judge(st,sc,v[1]);rows.push([st.n,st.y,st.t,sc.n,sc.t,v[1]==='ob'?'onderbouw':'bovenbouw',j.tr.min,['past','let op','knelt'][j.lvl],j.why.map(w=>w.t).join(' | ')]);});
+  download('stagematch-plaatsingen.csv',rows.map(r=>r.map(c=>String(c).replace(/;/g,',')).join(';')).join('\n'));};
+$('#tpS').onclick=()=>download('voorbeeld-studenten.csv','naam;jaar;woonplaats;vervoer;wens;eerdere_scholen\nVoorbeeld Student;3;Deurne;ov;bb;De Peelparel:ob|De Kameleon:ob\n');
+$('#tpSc').onclick=()=>download('voorbeeld-scholen.csv','naam;plaats;plekken_ob;plekken_bb;dagen;jaren\nVoorbeeldschool;Helmond;2;1;ma,di,wo,do,vr;3,4\n');
+function readFile(inp,cb){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{cb(csvParse(r.result));}catch(e){toast('Kon het bestand niet lezen');}inp.value='';};r.readAsText(f);}
+$('#imS').onchange=e=>readFile(e.target,rows=>{const unk=new Set();const list=rows.filter(r=>r.naam).map((r,i)=>{const t=Object.keys(TOWNS).find(x=>x.toLowerCase()===(r.woonplaats||'').toLowerCase());if(!t)unk.add(r.woonplaats);
+    const h=(r.eerdere_scholen||'').split('|').filter(Boolean).map(x=>{const [n,b]=x.split(':');const sc=SCHOOLS.find(s=>s.n.toLowerCase()===(n||'').trim().toLowerCase());return [sc?sc.id:(n||'').trim(),(b||'ob').trim().toLowerCase()==='bb'?'bb':'ob'];});
+    return {id:'i'+i+'_'+Date.now().toString(36),n:r.naam,y:Math.min(4,Math.max(1,+r.jaar||1)),t:t||'Helmond',v:['auto','fiets','ov'].includes((r.vervoer||'').toLowerCase())?r.vervoer.toLowerCase():'ov',w:['ob','bb'].includes((r.wens||'').toLowerCase())?r.wens.toLowerCase():undefined,h};});
+  if(!list.length){toast('Geen studenten gevonden in het bestand');return;}STUDENTS=list;PL={};undo=[];sel=null;save();render();$('#io').classList.remove('open');toast(`${list.length} studenten geïmporteerd`+(unk.size?` · onbekende plaats → Helmond: ${[...unk].join(', ')}`:''));});
+$('#imSc').onchange=e=>readFile(e.target,rows=>{const list=rows.filter(r=>r.naam).map((r,i)=>{const t=Object.keys(TOWNS).find(x=>x.toLowerCase()===(r.plaats||'').toLowerCase())||'Helmond';
+    const d=(r.dagen||'ma,di,wo,do,vr').split(/[,\s]+/).map(x=>x.slice(0,2).toLowerCase()).filter(x=>ALL.includes(x));const y=(r.jaren||'').split(/[,\s]+/).map(Number).filter(n=>n>=1&&n<=4);
+    return {id:'c'+i+'_'+Date.now().toString(36),n:r.naam,t,ob:+r.plekken_ob||0,bb:+r.plekken_bb||0,d:d.length?d:ALL,y:y.length?y:undefined,dx:(i%3-1)*5,dy:((i>>1)%3-1)*5};});
+  if(!list.length){toast('Geen scholen gevonden in het bestand');return;}SCHOOLS=list;PL={};undo=[];selSchool=null;save();render();$('#io').classList.remove('open');toast(`${list.length} scholen geïmporteerd`);});
+
+/* ================= bediening ================= */
+$$('.tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;$$('.tabs button').forEach(x=>x.classList.toggle('on',x===b));renderStudents();});
+$$('.chip[data-y]').forEach(b=>b.onclick=()=>{yf=+b.dataset.y;$$('.chip[data-y]').forEach(x=>x.classList.toggle('on',x===b));renderStudents();});
+$('#q').oninput=e=>{q=e.target.value.toLowerCase();renderStudents();};
+$('#bUndo').onclick=doUndo;$('#toastU').onclick=doUndo;
+$('#bHelp').onclick=()=>$('#help').classList.add('open');$('#helpClose').onclick=()=>$('#help').classList.remove('open');
+$('#bIo').onclick=()=>$('#io').classList.add('open');$('#ioClose').onclick=()=>$('#io').classList.remove('open');
+$('#reset').onclick=()=>{store.del('stagematch-v1');demo();undo=[];sel=null;selSchool=null;save();render();$('#io').classList.remove('open');toast('Demo opnieuw geladen');};
+$$('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();doUndo();}if(e.key==='Escape'){$$('.modal').forEach(m=>m.classList.remove('open'));sel=null;selSchool=null;render();}});
+load();drawBase();render();
+if(!store.get('stagematch-seen')){store.set('stagematch-seen',1);setTimeout(()=>$('#help').classList.add('open'),500);}
+window.__sm={get PL(){return PL;},judge,issues,place,S,ST,options,fitCount,render};
+})();
+</script>
+</body>
+</html>
