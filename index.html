@@ -164,7 +164,7 @@ main{display:grid;grid-template-columns:340px 1fr 380px;gap:16px;padding:16px;mi
     <div class="scroll" id="sList"></div>
   </section>
   <section class="mapwrap" aria-label="Kaart">
-    <svg id="map" viewBox="0 0 460 410" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="map" viewBox="0 0 480 432" preserveAspectRatio="xMidYMid meet"></svg>
     <div class="maph"><h2>Stagescholen rond Helmond</h2>
       <div class="legend"><span><span class="dot g"></span>past goed</span><span><span class="dot o"></span>kan, met aandachtspunt</span><span><span class="dot r"></span>knelt</span></div></div>
     <div class="hint" id="hint">Sleep een student naar een school, of klik op een student voor de beste opties</div>
@@ -230,7 +230,7 @@ const TOWNS={
  'Deurne':[51.4639,5.7961,1],'Asten':[51.4034,5.7476,0],'Someren':[51.3850,5.7139,0],'Gemert':[51.5556,5.6890,0],'Beek en Donk':[51.5341,5.6309,0],
  'Lieshout':[51.5170,5.5961,0],'Bakel':[51.5036,5.7400,0],'Son en Breugel':[51.5126,5.4932,0],'Heeze':[51.3827,5.5710,1],'Mariahout':[51.5410,5.5700,0],
  'Vlierden':[51.4430,5.7640,0],'Lierop':[51.4210,5.6780,0],'Stiphout':[51.4919,5.6136,0],'Brandevoort':[51.4613,5.6150,1]};
-const K=1900;const P=(lat,lon)=>[(lon-5.435)*K*.622,(51.585-lat)*K];
+const K=1900;const P=(lat,lon)=>[(lon-5.42)*K*.622,(51.592-lat)*K];
 function km(a,b){const R=6371,dLa=(b[0]-a[0])*Math.PI/180,dLo=(b[1]-a[1])*Math.PI/180;const h=Math.sin(dLa/2)**2+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(h));}
 
 /* ================= demo-gegevens (fictief) ================= */
@@ -333,7 +333,7 @@ const line=pts=>pts.map((t,i)=>{const [x,y]=P(...(Array.isArray(t)?t:TOWNS[t]));
 let gLines,gSchools,gHome;
 function drawBase(){svg.innerHTML='';
   const defs=el('defs',{});const pat=el('pattern',{id:'grid',width:20,height:20,patternUnits:'userSpaceOnUse'},defs);el('path',{d:'M20 0H0V20',fill:'none',stroke:'#e9e8f4','stroke-width':1},pat);
-  el('rect',{x:0,y:0,width:460,height:410,fill:'#f7f7fc'});el('rect',{x:0,y:0,width:460,height:410,fill:'url(#grid)'});
+  el('rect',{x:0,y:0,width:480,height:432,fill:'#f7f7fc'});el('rect',{x:0,y:0,width:480,height:432,fill:'url(#grid)'});
   // stedelijk gebied
   [['Eindhoven',34],['Helmond',22],['Geldrop',11],['Deurne',10],['Nuenen',9],['Son en Breugel',8],['Gemert',9],['Someren',8],['Asten',8],['Mierlo',7],['Heeze',7],['Beek en Donk',7],['Lieshout',6],['Bakel',6],['Mariahout',5],['Vlierden',5],['Lierop',5],['Stiphout',6],['Brandevoort',7]].forEach(([t,r])=>{const [x,y]=P(...TOWNS[t]);el('circle',{cx:x,cy:y,r,fill:'#ebeaf6'});});
   // water: Zuid-Willemsvaart en Eindhovens Kanaal
@@ -347,9 +347,9 @@ function drawBase(){svg.innerHTML='';
   el('path',{d:line(['Eindhoven','Geldrop',[51.455,5.62],'Helmond','Deurne',[51.47,5.85]]),fill:'none',stroke:'#a9a6c8','stroke-width':1.4,'stroke-dasharray':'5 3'});
   el('path',{d:line(['Eindhoven','Heeze',[51.36,5.60]]),fill:'none',stroke:'#a9a6c8','stroke-width':1.4,'stroke-dasharray':'5 3'});
   // plaatsnamen
-  Object.entries(TOWNS).forEach(([t,c])=>{if(t==='Stiphout'||t==='Brandevoort')return;const [x,y]=P(c[0],c[1]);const tx=el('text',{x,y:y+(t==='Helmond'?-24:t==='Eindhoven'?54:20),class:'town','text-anchor':'middle'});tx.textContent=t;});
+  Object.entries(TOWNS).forEach(([t,c])=>{if(t==='Stiphout'||t==='Brandevoort')return;const [x,y]=P(c[0],c[1]);const tx=el('text',{x,y:y+(t==='Helmond'?-16:t==='Eindhoven'?54:20),class:'town','text-anchor':'middle'});tx.textContent=t;});
   // de Kempel
-  const [kx,ky]=P(51.4905,5.6600);const k=el('g',{transform:`translate(${kx-9},${ky-10}) scale(.12)`});
+  const [kx,ky]=P(51.4793,5.6570);const k=el('g',{transform:`translate(${kx-9},${ky-10}) scale(.12)`});
   el('path',{fill:'#231973',d:'M133.6,171.9H15.9c-8.8,0-15.9-7.1-15.9-15.9V38.3c0-14.1,17.1-21.2,27.1-11.2l117.7,117.7C154.8,154.8,147.8,171.9,133.6,171.9z'},k);
   el('path',{fill:'#F02837',d:'M0,133.6V15.9C0,7.1,7.1,0,15.9,0h117.7c14.1,0,21.2,17.1,11.2,27.1L27.1,144.8C17.1,154.8,0,147.8,0,133.6z'},k);
   el('path',{fill:'#A50A28',d:'M27.1,144.8L86,86L27.1,27.1C17.1,17.1,0,24.2,0,38.3v95.3C0,147.8,17.1,154.8,27.1,144.8z'},k);
